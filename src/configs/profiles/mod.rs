@@ -2,17 +2,17 @@ use std::{ops::Deref, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
-pub use crate::configs::profiles::{
+use crate::configs::profiles::{
     golang::Golang, java::Java, javascript::JavaScript, kotlin::Kotlin, rust::Rust,
     typescript::TypeScript,
 };
 
-mod golang;
-mod java;
-mod javascript;
-mod kotlin;
-mod rust;
-mod typescript;
+pub mod golang;
+pub mod java;
+pub mod javascript;
+pub mod kotlin;
+pub mod rust;
+pub mod typescript;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Profile {

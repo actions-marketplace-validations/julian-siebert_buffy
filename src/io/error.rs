@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use miette::Diagnostic;
 
@@ -40,13 +40,26 @@ pub enum Error {
         #[source]
         source: std::io::Error,
     },
-}
 
-pub(super) fn from_io(path: &Path, source: std::io::Error) -> Error {
-    let path = path.to_owned();
-    match source.kind() {
-        std::io::ErrorKind::NotFound => Error::NotFound { path, source },
-        std::io::ErrorKind::PermissionDenied => Error::PermissionDenied { path, source },
-        _ => Error::Other { path, source },
-    }
+    #[error("Failed to spawn `{program}`")]
+    #[diagnostic(
+        code(cmd::spawn_failed),
+        help("Make sure `{program}` is installed and on your PATH.")
+    )]
+    CommandSpawn {
+        program: String,
+        #[source]
+        source: std::io::Error,
+    },
+
+    #[error("`{program}` exited with status {code}")]
+    #[diagnostic(
+        code(cmd::failed),
+        help("Full command: {program} {}\n\nCheck the output above for details from `{program}`.", args.join(" "))
+    )]
+    CommandFailed {
+        program: String,
+        args: Vec<String>,
+        code: i32,
+    },
 }

@@ -4,11 +4,15 @@ use miette::{NamedSource, SourceSpan};
 
 pub use crate::configs::error::Error;
 pub use crate::configs::main::Main;
+pub use crate::configs::main::Package;
+pub use crate::configs::main::Source;
 use crate::configs::profiles::{NamedProfile, Profile};
 
+#[allow(unused_assignments)]
 mod error;
 mod main;
 
+#[allow(unused_assignments)]
 pub mod author;
 
 pub mod profiles;
@@ -85,7 +89,7 @@ fn parse_toml<T: serde::de::DeserializeOwned>(path: &str, content: String) -> Re
 #[cfg(test)]
 mod tests {
 
-    use crate::configs::profiles::Golang;
+    use crate::configs::profiles::golang::Golang;
 
     use super::*;
 
@@ -100,8 +104,8 @@ mod tests {
 
         let profile: Profile = toml::from_str(toml_content).unwrap();
         match profile {
-            Profile::Golang(Golang::Git { module, .. }) => {
-                assert_eq!(module, "github.com/foo/bar");
+            Profile::Golang(Golang::Git(git)) => {
+                assert_eq!(git.module, "github.com/foo/bar");
             }
             _ => panic!("wrong variant"),
         }

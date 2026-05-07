@@ -1,0 +1,7 @@
+[package]
+name = "buffy-test"
+description = "Example project for buffy"
+version = "0.0.0"
+license = "MIT"
+homepage = "https://github.com/julian-siebert/buffy"
+authors = ["Julian Siebert <mail@julian-siebert.de>"]

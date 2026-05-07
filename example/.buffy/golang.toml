@@ -1,0 +1,3 @@
+[golang.git]
+module = "github.com/julian-siebert/buffy-test-go"
+remote = "git@github.com:julian-siebert/buffy-test-go.git"

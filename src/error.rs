@@ -2,8 +2,29 @@ use std::sync::Arc;
 
 use miette::{Diagnostic, NamedSource, SourceSpan};
 
-#[derive(Debug, Clone, thiserror::Error, Diagnostic)]
+use crate::dependencies::DependencyError;
+
+#[derive(Debug, thiserror::Error, Diagnostic)]
 pub enum Error {
+    #[error(transparent)]
+    #[diagnostic(transparent)]
+    Dependency(#[from] DependencyError),
+
+    #[error(transparent)]
+    #[diagnostic(transparent)]
+    Config(#[from] crate::configs::Error),
+
+    #[error(transparent)]
+    #[diagnostic(transparent)]
+    IO(#[from] crate::io::Error),
+
+    #[error("Task panicked: {message}")]
+    #[diagnostic(
+        code(internal::task_panicked),
+        help("This is a bug in buffy. Please report it.")
+    )]
+    TaskPanicked { message: String },
+
     #[error("Path error: {0}")]
     #[diagnostic(code(buffy::path), help("Is the program installed in PATH?"))]
     Which(#[from] which::Error),
