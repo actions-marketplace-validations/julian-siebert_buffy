@@ -3,6 +3,7 @@ use crate::error::{IoResultExt, Result};
 use console::style;
 use std::path::PathBuf;
 
+#[allow(unused)]
 const TEMPLATE: &str = r#"[package]
 name    = "{name}"
 description = "Protobuf stubs"
@@ -40,7 +41,7 @@ path = "./src"
 # url        = "https://github.com/your-org/{name}"
 "#;
 
-pub fn init(name: &str, path: Option<PathBuf>) -> Result<()> {
+pub fn _init(name: &str, path: Option<PathBuf>) -> Result<()> {
     let dir = path.unwrap_or_else(|| PathBuf::from("."));
 
     if !dir.exists() {

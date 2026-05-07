@@ -1,20 +1,9 @@
-use indicatif::ProgressBar;
-
 use crate::{
-    configs::{
-        Package, Source,
-        profiles::{
-            NamedProfile,
-            Profile::{Golang, Java, JavaScript, Kotlin, Rust, TypeScript},
-        },
-    },
+    configs::profiles::Profile::{Golang, Java, JavaScript, Kotlin, Rust, TypeScript},
     error::Result,
     targets::{
         context::Context,
-        golang::{
-            build_go_profile_target, check_go_profile_target, git::publish_go_profile_git_target,
-            publish_go_profile_target,
-        },
+        golang::{build_go_profile_target, check_go_profile_target, publish_go_profile_target},
     },
 };
 
@@ -29,11 +18,11 @@ mod typescript;
 pub async fn check_profile_target(ctx: Context) -> Result<()> {
     match ctx.profile.kind() {
         Golang(golang) => check_go_profile_target(ctx.clone(), golang).await?,
-        Java(java) => {}
-        Kotlin(kotlin) => {}
-        JavaScript(java_script) => {}
-        Rust(rust) => {}
-        TypeScript(type_script) => {}
+        Java(_java) => {}
+        Kotlin(_kotlin) => {}
+        JavaScript(_java_script) => {}
+        Rust(_rust) => {}
+        TypeScript(_type_script) => {}
     };
 
     Ok(())
@@ -42,11 +31,11 @@ pub async fn check_profile_target(ctx: Context) -> Result<()> {
 pub async fn build_profile_target(ctx: Context) -> Result<()> {
     match ctx.profile.kind() {
         Golang(golang) => build_go_profile_target(ctx.clone(), golang).await?,
-        Java(java) => {}
-        Kotlin(kotlin) => {}
-        JavaScript(java_script) => {}
-        Rust(rust) => {}
-        TypeScript(type_script) => {}
+        Java(_java) => {}
+        Kotlin(_kotlin) => {}
+        JavaScript(_java_script) => {}
+        Rust(_rust) => {}
+        TypeScript(_type_script) => {}
     };
 
     Ok(())
@@ -55,11 +44,11 @@ pub async fn build_profile_target(ctx: Context) -> Result<()> {
 pub async fn publish_profile_target(ctx: Context) -> Result<()> {
     match ctx.profile.kind() {
         Golang(golang) => publish_go_profile_target(ctx.clone(), golang).await?,
-        Java(java) => {}
-        Kotlin(kotlin) => {}
-        JavaScript(java_script) => {}
-        Rust(rust) => {}
-        TypeScript(type_script) => {}
+        Java(_java) => {}
+        Kotlin(_kotlin) => {}
+        JavaScript(_java_script) => {}
+        Rust(_rust) => {}
+        TypeScript(_type_script) => {}
     };
 
     Ok(())
