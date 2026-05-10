@@ -4,3 +4,12 @@
 
 * [Buffy Reference](reference/index.md)
   * [The Manifest Format](reference/manifest.md)
+  * [Profiles Format](reference/profiles.md)
+    * [Golang](reference/profiles/golang.md)
+    * [Java](reference/profiles/java.md)
+    * [Kotlin](reference/profiles/kotlin.md)
+    * [Rust](reference/profiles/rust.md)
+    * [JavaScript](reference/profiles/javascript.md)
+    * [TypeScript](reference/profiles/typescript.md)
+  * [Environment Variables](reference/environment-variables.md)
+  * [Command-Line Interface](reference/cli.md)

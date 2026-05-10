@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc, time::Instant};
 
 use clap::Parser;
 use console::style;
@@ -42,6 +42,8 @@ async fn main() -> miette::Result<()> {
 
     let cli = Arc::new(cli);
 
+    let start_time = Instant::now();
+
     let profiles = read_profiles()?;
 
     if profiles.is_empty() {
@@ -67,7 +69,7 @@ async fn main() -> miette::Result<()> {
     println!(
         "{} {} {} profile(s)...",
         style("[-]").cyan().bold(),
-        style(operation).bold(),
+        style(format!("{operation}ing")).bold(),
         style(total).bold()
     );
 
@@ -143,25 +145,29 @@ async fn main() -> miette::Result<()> {
 
     println!();
 
+    let duration = start_time.elapsed();
+
     if !errors.is_empty() {
         println!(
-            "{} {} {}",
+            "{} {} {} {}",
             style("[!]").red().bold(),
             style(format!("{operation} failed")).bold(),
             style(format!(
                 "({} succeeded, {} failed)",
                 successes.len(),
-                errors.len()
+                errors.len(),
             ))
-            .dim()
+            .dim(),
+            style(format!("in {:.2?}", duration)).dim(),
         );
         Err(AggregateError { errors }.into())
     } else {
         println!(
-            "{} {} {}",
+            "{} {} {} {}",
             style("[+]").green().bold(),
             style(format!("{operation} successful")).bold(),
-            style(format!("({}/{})", successes.len(), total)).dim()
+            style(format!("({}/{})", successes.len(), total)).dim(),
+            style(format!("in {:.2?}", duration)).dim(),
         );
         Ok(())
     }

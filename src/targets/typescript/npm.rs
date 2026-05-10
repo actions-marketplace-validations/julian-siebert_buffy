@@ -2,6 +2,7 @@ use tokio::process::Command;
 
 use crate::{
     configs::profiles::typescript::Npm,
+    dependencies::npm,
     error::{Error, Result},
     targets::{
         context::Context,
@@ -30,7 +31,7 @@ pub async fn build_typescript_profile_npm_target(ctx: Context, n: &Npm) -> Resul
 
     // dry-run publish
     ctx.pb.set_message("Verifying package layout...");
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["publish", "--dry-run", "--no-audit"])
         .current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;
@@ -67,7 +68,7 @@ pub async fn publish_typescript_profile_npm_target(ctx: Context, n: &Npm) -> Res
 
     let version = ctx.package.version.to_string();
 
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["publish", "--access", &n.access])
         .current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;

@@ -2,6 +2,7 @@ use tokio::process::Command;
 
 use crate::{
     configs::profiles::javascript::Npm,
+    dependencies::npm,
     error::{Error, Result},
     targets::{context::Context, javascript::helpers::render_package_json},
 };
@@ -56,7 +57,7 @@ pub async fn publish_javascript_profile_npm_target(ctx: Context, n: &Npm) -> Res
         n.name, n.registry
     ));
 
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["publish", "--access", &n.access])
         .current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;

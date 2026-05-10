@@ -5,7 +5,7 @@ use tokio::process::Command;
 
 use crate::{
     configs::profiles::typescript::TypeScript,
-    dependencies::protoc,
+    dependencies::{npm, protoc},
     error::{Error, Result},
     targets::context::Context,
 };
@@ -149,18 +149,18 @@ pub fn render_tsconfig() -> Result<String> {
 
 pub async fn install_and_build(ctx: &Context) -> Result<()> {
     ctx.pb.set_message("Validating package.json...");
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["pkg", "fix"]).current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;
 
     ctx.pb.set_message("Installing dependencies...");
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["install", "--no-audit", "--no-fund"])
         .current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;
 
     ctx.pb.set_message("Compiling TypeScript...");
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["run", "build"]).current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;
 

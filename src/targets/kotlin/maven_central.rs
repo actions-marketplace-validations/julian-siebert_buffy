@@ -3,6 +3,7 @@ use tokio::process::Command;
 
 use crate::{
     configs::profiles::kotlin::MavenCentral,
+    dependencies::{gpg, maven},
     error::{Error, Result},
     targets::{
         context::Context,
@@ -98,7 +99,7 @@ pub async fn publish_kotlin_profile_maven_central_target(
             .canonicalize()
             .map_err(|e| crate::io::from_io(&key_file, e))?;
 
-        let mut cmd = Command::new("gpg");
+        let mut cmd = Command::new(gpg()?);
         cmd.args(["--batch", "--import"]).arg(&abs_key_file);
         ctx.run(&mut cmd).await?;
         std::fs::remove_file(&key_file).ok();
@@ -121,8 +122,10 @@ pub async fn publish_kotlin_profile_maven_central_target(
         args.push(format!("-Dgpg.keyname={key_id}"));
     }
 
-    let mut cmd = Command::new("mvn");
-    cmd.args(&args).current_dir(&ctx.target_path);
+    let mut cmd = Command::new(maven()?);
+    cmd.args(&args)
+        .current_dir(&ctx.target_path)
+        .env("MAVEN_OPTS", "--sun-misc-unsafe-memory-access=allow");
 
     if let Some(passphrase) = env_nonempty("GPG_PASSPHRASE") {
         cmd.env("MAVEN_GPG_PASSPHRASE", passphrase);

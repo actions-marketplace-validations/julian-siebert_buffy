@@ -3,7 +3,7 @@ use tokio::process::Command;
 
 use crate::{
     configs::profiles::kotlin::Scm,
-    dependencies::protoc,
+    dependencies::{maven, protoc},
     error::{Error, Result},
     license::resolve_licenses,
     targets::context::Context,
@@ -152,9 +152,10 @@ pub fn render_pom(
 
 pub async fn verify_compile(ctx: &Context) -> Result<()> {
     ctx.pb.set_message("Verifying with mvn compile...");
-    let mut cmd = Command::new("mvn");
+    let mut cmd = Command::new(maven()?);
     cmd.args(["compile", "-q", "--no-transfer-progress"])
-        .current_dir(&ctx.target_path);
+        .current_dir(&ctx.target_path)
+        .env("MAVEN_OPTS", "--sun-misc-unsafe-memory-access=allow");
     ctx.run(&mut cmd).await?;
     Ok(())
 }

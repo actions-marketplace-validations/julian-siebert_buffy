@@ -3,6 +3,7 @@ use tokio::process::Command;
 
 use crate::{
     configs::profiles::javascript::Git,
+    dependencies::npm,
     error::Result,
     git,
     targets::{context::Context, javascript::helpers::render_package_json},
@@ -30,14 +31,14 @@ pub async fn build_javascript_profile_git_target(ctx: Context, g: &Git) -> Resul
 
     // install deps to validate they resolve
     ctx.pb.set_message("Installing dependencies...");
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["install", "--no-audit", "--no-fund", "--silent"])
         .current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;
 
     // dry-run publish to catch packaging issues
     ctx.pb.set_message("Verifying package layout...");
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(npm()?);
     cmd.args(["publish", "--dry-run", "--no-audit"])
         .current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;

@@ -2,6 +2,7 @@ use tokio::process::Command;
 
 use crate::{
     configs::profiles::rust::Crate,
+    dependencies::cargo,
     error::{Error, Result},
     targets::{
         context::Context,
@@ -62,7 +63,7 @@ pub async fn publish_rust_profile_crate_target(ctx: Context, c: &Crate) -> Resul
         args.push(&c.registry);
     }
 
-    let mut cmd = Command::new("cargo");
+    let mut cmd = Command::new(cargo()?);
     cmd.args(&args).current_dir(&ctx.target_path);
     ctx.run(&mut cmd).await?;
 
