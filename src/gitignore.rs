@@ -1,29 +1,34 @@
-use crate::targets::context::TARGETS_DIRECTORY_PATH;
+use std::path::Path;
 
-const GITIGNORE_PATH: &str = ".gitignore";
+use crate::error::Result;
 
-pub fn ensure_target_in_gitignore() -> Result<(), crate::io::Error> {
-    if !crate::io::exists(GITIGNORE_PATH)? {
-        crate::io::write(GITIGNORE_PATH, format!("{TARGETS_DIRECTORY_PATH}\n"))?;
+pub fn ensure_entries_in_gitignore(dir: &Path, entries: &[&str]) -> Result<()> {
+    let path = dir.join(".gitignore");
+
+    if !crate::io::exists(&path)? {
+        let content = entries.iter().map(|e| format!("{e}\n")).collect::<String>();
+        crate::io::write(&path, content)?;
         return Ok(());
     }
 
-    let content = crate::io::read_to_string(GITIGNORE_PATH)?;
+    let existing = crate::io::read_to_string(&path)?;
+    let mut updated = existing.clone();
 
-    if has_entry(&content, TARGETS_DIRECTORY_PATH) {
-        return Ok(());
+    let mut added_anything = false;
+    for entry in entries {
+        if !has_entry(&updated, entry) {
+            if !updated.is_empty() && !updated.ends_with('\n') {
+                updated.push('\n');
+            }
+            updated.push_str(entry);
+            updated.push('\n');
+            added_anything = true;
+        }
     }
 
-    let mut updated = content;
-    if !updated.is_empty() && !updated.ends_with('\n') {
-        updated.push('\n');
+    if added_anything {
+        crate::io::write(&path, updated)?;
     }
-
-    updated.push_str(TARGETS_DIRECTORY_PATH);
-    updated.push('\n');
-
-    crate::io::write(GITIGNORE_PATH, updated)?;
-
     Ok(())
 }
 

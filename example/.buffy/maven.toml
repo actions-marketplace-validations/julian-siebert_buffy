@@ -1,0 +1,8 @@
+[kotlin.maven_central]
+group_id = "io.github.julian-siebert"
+artifact_id = "buffy-test-kotlin"
+url = "https://github.com/julian-siebert/buffy-test"
+
+[kotlin.maven_central.scm]
+connection = "scm:git:git://github.com/youruser/buffy-test.git"
+url = "https://github.com/youruser/buffy-test"

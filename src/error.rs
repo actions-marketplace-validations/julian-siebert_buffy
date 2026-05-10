@@ -25,6 +25,10 @@ pub enum Error {
     )]
     TaskPanicked { message: String },
 
+    #[error("Required environment variable `{name}` is not set")]
+    #[diagnostic(code(env::missing), help("{hint}"))]
+    MissingEnv { name: String, hint: String },
+
     #[error("Path error: {0}")]
     #[diagnostic(code(buffy::path), help("Is the program installed in PATH?"))]
     Which(#[from] which::Error),

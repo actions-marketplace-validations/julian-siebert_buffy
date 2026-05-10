@@ -1,9 +1,9 @@
 [package]
-name        = "{{ name }}"
-version     = "{{ version }}"
-edition     = "{{ edition }}"
-{% if authors %}authors = [{{ authors | join(sep=", ") }}]{% endif %}
+name = "{{ name }}"
 description = "{{ description }}"
+version = "{{ version }}"
+edition = "{{ edition }}"
+authors = [{% for a in authors %}{{ a }}{% if not loop.last %}, {% endif %}{% endfor %}]
 license = "{{ license }}"
 documentation = "{{ documentation }}"
 homepage = "{{ homepage }}"
@@ -15,7 +15,6 @@ path = "src/lib.rs"
 
 [dependencies]
 prost = "{{ prost_version }}"
-prost-types = "{{ prost_version }}"
 {% if grpc %}
 tonic = "{{ tonic_version }}"
 tonic-prost = "{{ tonic_version }}"

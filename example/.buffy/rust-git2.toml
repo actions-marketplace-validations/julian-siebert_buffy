@@ -1,0 +1,6 @@
+[rust.git]
+edition = "2021"
+remote = "git@github.com:julian-siebert/buffy-test-rs-2.git"
+branch = "main"
+repository = "https://github.com/julian-siebert/buffy-test-rs"
+documentation = "https://github.com/julian-siebert/buffy-test-rs"

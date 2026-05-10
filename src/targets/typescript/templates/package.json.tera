@@ -1,0 +1,31 @@
+{
+  "name": "{{ name }}",
+  "version": "{{ version }}",
+  "description": "{{ description }}",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "{{ license }}",
+  "homepage": "{{ homepage }}",
+  "repository": {
+    "type": "git",
+    "url": "{{ repository }}"
+  },
+  "author": "{{ author }}",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.0"{% if grpc %},
+    "nice-grpc": "^2.1.10",
+    "nice-grpc-web": "^3.3.5"{% endif %}
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  },
+  "files": ["dist/**/*", "README.md", "LICENSE"]{% if access %},
+  "publishConfig": {
+    "registry": "{{ registry }}",
+    "access": "{{ access }}"
+  }{% endif %}
+}

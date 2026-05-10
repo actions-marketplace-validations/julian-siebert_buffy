@@ -1,0 +1,5 @@
+[typescript.git]
+name = "@julian-siebert/buffy-test-js"
+remote = "git@github.com:julian-siebert/buffy-test-js.git"
+branch = "main"
+repository = "https://github.com/julian-siebert/buffy-test-js"

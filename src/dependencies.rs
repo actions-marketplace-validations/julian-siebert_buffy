@@ -5,6 +5,22 @@ use which::which;
 
 #[derive(Debug, Clone, thiserror::Error, Diagnostic)]
 pub enum DependencyError {
+    #[error("`gpg` not found in PATH")]
+    #[diagnostic(
+        code(deps::gpg),
+        help(
+            "Install GnuPG:\n\
+                 \n\
+                 • macOS:    brew install gnupg\n\
+                 • Debian:   apt install gnupg\n\
+                 • Arch:     pacman -S gnupg\n\
+                 • Windows:  scoop install gpg  (or download from https://gnupg.org/download/)\n\
+                 \n\
+                 After installing, verify with: gpg --version"
+        )
+    )]
+    Gpg,
+
     #[error("`git` not found in PATH")]
     #[diagnostic(
         code(deps::git),
@@ -123,6 +139,141 @@ pub enum DependencyError {
         )
     )]
     Cargo,
+
+    #[error("`protoc-gen-prost` not found in PATH")]
+    #[diagnostic(
+        code(deps::protoc_gen_prost),
+        help(
+            "Install the prost protoc plugin:\n\
+                 \n\
+                 cargo install protoc-gen-prost\n\
+                 \n\
+                 Make sure ~/.cargo/bin is in your PATH."
+        )
+    )]
+    ProtocGenProst,
+
+    #[error("`protoc-gen-prost-crate` not found in PATH")]
+    #[diagnostic(
+        code(deps::protoc_gen_prost_crate),
+        help(
+            "Install the prost crate generator plugin:\n\
+                 \n\
+                 cargo install protoc-gen-prost-crate\n\
+                 \n\
+                 Make sure ~/.cargo/bin is in your PATH."
+        )
+    )]
+    ProtocGenProstCrate,
+
+    #[error("`protoc-gen-tonic` not found in PATH")]
+    #[diagnostic(
+        code(deps::protoc_gen_tonic),
+        help(
+            "Install the tonic gRPC plugin:\n\
+                 \n\
+                 cargo install protoc-gen-tonic\n\
+                 \n\
+                 Make sure ~/.cargo/bin is in your PATH."
+        )
+    )]
+    ProtocGenTonic,
+
+    #[error("`node` not found in PATH")]
+    #[diagnostic(
+        code(deps::node),
+        help(
+            "Install Node.js (LTS recommended):\n\
+                 \n\
+                 • macOS:    brew install node\n\
+                 • Debian:   apt install nodejs npm\n\
+                 • Arch:     pacman -S nodejs npm\n\
+                 • Windows:  scoop install nodejs-lts\n\
+                 • Anywhere: use https://github.com/nvm-sh/nvm\n\
+                 \n\
+                 After installing, verify with: node --version"
+        )
+    )]
+    Node,
+
+    #[error("`npm` not found in PATH")]
+    #[diagnostic(
+        code(deps::npm),
+        help(
+            "npm comes with Node.js. Install Node.js:\n\
+                 \n\
+                 • macOS:    brew install node\n\
+                 • Debian:   apt install nodejs npm\n\
+                 • Anywhere: https://nodejs.org/\n\
+                 \n\
+                 Verify with: npm --version"
+        )
+    )]
+    Npm,
+
+    #[error("`protoc-gen-js` not found in PATH")]
+    #[diagnostic(
+        code(deps::protoc_gen_js),
+        help(
+            "Install the JavaScript protobuf plugin:\n\
+                 \n\
+                 npm install -g protoc-gen-js\n\
+                 \n\
+                 Or download from https://github.com/protocolbuffers/protobuf-javascript/releases\n\
+                 and place the binary in your PATH."
+        )
+    )]
+    ProtocGenJs,
+
+    #[error("`protoc-gen-grpc-web` not found in PATH")]
+    #[diagnostic(
+        code(deps::protoc_gen_grpc_web),
+        help(
+            "Install the gRPC-Web plugin:\n\
+                 \n\
+                 Download from https://github.com/grpc/grpc-web/releases\n\
+                 and place `protoc-gen-grpc-web` in your PATH.\n\
+                 \n\
+                 On macOS: brew install protoc-gen-grpc-web"
+        )
+    )]
+    ProtocGenGrpcWeb,
+
+    #[error("`protoc-gen-ts_proto` not found in PATH")]
+    #[diagnostic(
+        code(deps::protoc_gen_ts_proto),
+        help(
+            "Install ts-proto:\n\
+                 \n\
+                 npm install -g ts-proto\n\
+                 \n\
+                 Or as a devDependency in your project:\n\
+                 npm install --save-dev ts-proto\n\
+                 \n\
+                 Verify with: which protoc-gen-ts_proto"
+        )
+    )]
+    ProtocGenTsProto,
+
+    #[error("`tsc` not found in PATH")]
+    #[diagnostic(
+        code(deps::tsc),
+        help(
+            "Install the TypeScript compiler:\n\
+                 \n\
+                 npm install -g typescript\n\
+                 \n\
+                 Or as a devDependency:\n\
+                 npm install --save-dev typescript\n\
+                 \n\
+                 Verify with: tsc --version"
+        )
+    )]
+    Tsc,
+}
+
+pub fn gpg() -> Result<PathBuf, DependencyError> {
+    which("gpg").map_err(|_| DependencyError::Gpg)
 }
 
 pub fn git() -> Result<PathBuf, DependencyError> {
@@ -173,4 +324,40 @@ pub fn maven() -> Result<PathBuf, DependencyError> {
 
 pub fn cargo() -> Result<PathBuf, DependencyError> {
     which("cargo").map_err(|_| DependencyError::Cargo)
+}
+
+pub fn protoc_gen_prost() -> Result<PathBuf, DependencyError> {
+    which("protoc-gen-prost").map_err(|_| DependencyError::ProtocGenProst)
+}
+
+pub fn protoc_gen_prost_crate() -> Result<PathBuf, DependencyError> {
+    which("protoc-gen-prost-crate").map_err(|_| DependencyError::ProtocGenProstCrate)
+}
+
+pub fn protoc_gen_tonic() -> Result<PathBuf, DependencyError> {
+    which("protoc-gen-tonic").map_err(|_| DependencyError::ProtocGenTonic)
+}
+
+pub fn node() -> Result<PathBuf, DependencyError> {
+    which("node").map_err(|_| DependencyError::Node)
+}
+
+pub fn npm() -> Result<PathBuf, DependencyError> {
+    which("npm").map_err(|_| DependencyError::Npm)
+}
+
+pub fn protoc_gen_js() -> Result<PathBuf, DependencyError> {
+    which("protoc-gen-js").map_err(|_| DependencyError::ProtocGenJs)
+}
+
+pub fn protoc_gen_grpc_web() -> Result<PathBuf, DependencyError> {
+    which("protoc-gen-grpc-web").map_err(|_| DependencyError::ProtocGenGrpcWeb)
+}
+
+pub fn protoc_gen_ts_proto() -> Result<PathBuf, DependencyError> {
+    which("protoc-gen-ts_proto").map_err(|_| DependencyError::ProtocGenTsProto)
+}
+
+pub fn tsc() -> Result<PathBuf, DependencyError> {
+    which("tsc").map_err(|_| DependencyError::Tsc)
 }

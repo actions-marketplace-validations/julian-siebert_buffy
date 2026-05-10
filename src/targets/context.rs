@@ -23,6 +23,7 @@ pub struct ContextInner {
     pub profile: NamedProfile,
     pub target_path: PathBuf,
     pub pb: ProgressBar,
+    verbose: bool,
     proto_files: Vec<PathBuf>,
 }
 
@@ -32,6 +33,7 @@ impl Context {
         source: Source,
         profile: NamedProfile,
         pb: ProgressBar,
+        verbose: bool,
     ) -> Result<Self> {
         let target_path = PathBuf::from(TARGETS_DIRECTORY_PATH).join(profile.name());
 
@@ -58,6 +60,7 @@ impl Context {
             profile,
             target_path,
             pb,
+            verbose,
             proto_files,
         })))
     }
@@ -65,14 +68,19 @@ impl Context {
     pub async fn run(&self, cmd: &mut Command) -> Result<()> {
         let std_cmd = cmd.as_std();
         let program = std_cmd.get_program().to_string_lossy().into_owned();
-
         let args: Vec<String> = std_cmd
             .get_args()
             .map(|a| a.to_string_lossy().into_owned())
             .collect();
 
+        let stdout_target = if self.verbose {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        };
+
         let mut child = cmd
-            .stdout(Stdio::null())
+            .stdout(stdout_target)
             .stderr(Stdio::piped())
             .spawn()
             .map_err(|source| crate::io::Error::CommandSpawn {
@@ -80,41 +88,72 @@ impl Context {
                 source,
             })?;
 
+        let stdout = child.stdout.take();
         let stderr = child.stderr.take().unwrap();
 
-        let pb = self.pb.clone();
-        let prefix = self.profile.name().to_string();
-        let cmd_display = program.clone();
+        fn truncate(s: &str, max: usize) -> String {
+            if s.chars().count() <= max {
+                s.to_string()
+            } else {
+                let truncated: String = s.chars().take(max).collect();
+                format!("{truncated}...")
+            }
+        }
+
+        let pb_out = self.pb.clone();
+        let pb_err = self.pb.clone();
+        let prefix_out = self.profile.name().to_string();
+        let prefix_err = prefix_out.clone();
+        let cmd_display_out = truncate(&format!("{program} {}", args.join(" ")), 16);
+        let cmd_display_err = cmd_display_out.clone();
+        let verbose = self.verbose;
+
+        let out_task = tokio::spawn(async move {
+            if !verbose {
+                return;
+            }
+            if let Some(stdout) = stdout {
+                let mut lines = BufReader::new(stdout).lines();
+                while let Ok(Some(line)) = lines.next_line().await {
+                    pb_out.suspend(|| {
+                        eprintln!(
+                            "{} {} {} {line}",
+                            style("[>]").blue().bold(),
+                            style(prefix_out.to_uppercase()).bold(),
+                            style(&cmd_display_out).cyan()
+                        )
+                    });
+                }
+            }
+        });
 
         let err_task = tokio::spawn(async move {
             let mut lines = BufReader::new(stderr).lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                pb.suspend(|| {
+                pb_err.suspend(|| {
                     eprintln!(
                         "{} {} {} {line}",
                         style("[~]").yellow().bold(),
-                        style(prefix.to_uppercase()).bold(),
-                        style(&cmd_display).cyan()
+                        style(prefix_err.to_uppercase()).bold(),
+                        style(&cmd_display_err).cyan()
                     )
-                })
+                });
             }
         });
 
-        let (_, status) = tokio::join!(err_task, child.wait());
+        let (_, _, status) = tokio::join!(out_task, err_task, child.wait());
         let status = status.map_err(|source| crate::io::Error::CommandSpawn {
             program: program.clone(),
             source,
         })?;
 
         if !status.success() {
-            return Err(crate::io::Error::CommandFailed {
+            return Err(crate::error::Error::IO(crate::io::Error::CommandFailed {
                 program,
                 args,
                 code: status.code().unwrap_or(-1),
-            }
-            .into());
+            }));
         }
-
         Ok(())
     }
 

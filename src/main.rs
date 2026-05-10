@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use clap::Parser;
 use console::style;
@@ -10,7 +10,7 @@ use crate::{
     cli::Cli,
     configs::{read_main, read_profiles},
     error::{Error, Result},
-    gitignore::ensure_target_in_gitignore,
+    gitignore::ensure_entries_in_gitignore,
     targets::{
         build_profile_target, check_profile_target, context::Context, publish_profile_target,
     },
@@ -22,7 +22,6 @@ pub mod dependencies;
 #[allow(unused_assignments)]
 pub mod error;
 mod gitignore;
-mod init;
 pub mod io;
 pub mod license;
 pub mod targets;
@@ -39,7 +38,7 @@ async fn main() -> miette::Result<()> {
         config.package.version = version;
     }
 
-    ensure_target_in_gitignore()?;
+    ensure_entries_in_gitignore(PathBuf::from(".").as_path(), &["target", ".env"])?;
 
     let cli = Arc::new(cli);
 
@@ -73,6 +72,7 @@ async fn main() -> miette::Result<()> {
     );
 
     let multi = MultiProgress::new();
+
     let mut tasks: JoinSet<(String, Result<()>)> = JoinSet::new();
 
     for profile in profiles {
@@ -80,10 +80,11 @@ async fn main() -> miette::Result<()> {
         let package = config.package.clone();
         let source = config.source.clone();
         let profile_name = profile.name().to_string();
+        let verbose = cli.verbose;
 
         tasks.spawn(async move {
             let result: Result<()> = async {
-                let ctx = Context::new(package, source, profile, pb)?;
+                let ctx = Context::new(package, source, profile, pb, verbose)?;
                 if is_check {
                     check_profile_target(ctx.clone()).await?;
                     return Ok(());

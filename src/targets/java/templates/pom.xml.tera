@@ -88,24 +88,24 @@
         <artifactId>maven-gpg-plugin</artifactId>
         <version>3.2.4</version>
         <configuration>
-          <keyname>${gpg.keyname}</keyname>
-          <passphrase>${gpg.passphrase}</passphrase>
-          <!-- keys from env -->
-          <gpgArguments>
-            <arg>--batch</arg>
-            <arg>--yes</arg>
-            <arg>--pinentry-mode</arg>
-            <arg>loopback</arg>
-          </gpgArguments>
+            {% if gpg_keyname %}<keyname>${gpg.keyname}</keyname>{% endif %}
+            <gpgArguments>
+                <arg>--batch</arg>
+                <arg>--yes</arg>
+                {% if gpg_passphrase %}
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+                {% endif %}
+            </gpgArguments>
         </configuration>
         <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals><goal>sign</goal></goals>
-          </execution>
-        </executions>
-      </plugin>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+                <goals><goal>sign</goal></goals>
+        </execution>
+    </executions>
+    </plugin>
 
       <!-- Maven Central publishing (neues Central Portal) -->
       <plugin>
@@ -115,8 +115,8 @@
         <extensions>true</extensions>
         <configuration>
           <publishingServerId>central</publishingServerId>
-          <autoPublish>true</autoPublish>
-          <waitUntil>published</waitUntil>
+          <autoPublish>{{ auto_publish }}</autoPublish>
+          <waitUntil>{{ wait_until }}</waitUntil>
         </configuration>
       </plugin>
     </plugins>
