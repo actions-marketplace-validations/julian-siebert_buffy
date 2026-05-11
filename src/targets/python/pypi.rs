@@ -88,6 +88,7 @@ pub async fn publish_python_profile_pypi_target(ctx: Context, p: &Pypi) -> Resul
     cmd.args([
         "upload",
         "--non-interactive",
+        "--verbose",
         "--repository-url",
         &p.repository_url,
         "dist/*",
