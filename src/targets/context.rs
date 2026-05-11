@@ -73,14 +73,8 @@ impl Context {
             .map(|a| a.to_string_lossy().into_owned())
             .collect();
 
-        let stdout_target = if self.verbose {
-            Stdio::piped()
-        } else {
-            Stdio::null()
-        };
-
         let mut child = cmd
-            .stdout(stdout_target)
+            .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
             .map_err(|source| crate::io::Error::CommandSpawn {
@@ -88,7 +82,7 @@ impl Context {
                 source,
             })?;
 
-        let stdout = child.stdout.take();
+        let stdout = child.stdout.take().unwrap();
         let stderr = child.stderr.take().unwrap();
 
         fn truncate(s: &str, max: usize) -> String {
@@ -106,15 +100,16 @@ impl Context {
         let prefix_err = prefix_out.clone();
         let cmd_display_out = truncate(&format!("{program} {}", args.join(" ")), 16);
         let cmd_display_err = cmd_display_out.clone();
+        let cmd_display = cmd_display_out.clone();
         let verbose = self.verbose;
 
+        let captured = Arc::new(tokio::sync::Mutex::new(Vec::<String>::new()));
+        let captured_clone = Arc::clone(&captured);
+
         let out_task = tokio::spawn(async move {
-            if !verbose {
-                return;
-            }
-            if let Some(stdout) = stdout {
-                let mut lines = BufReader::new(stdout).lines();
-                while let Ok(Some(line)) = lines.next_line().await {
+            let mut lines = BufReader::new(stdout).lines();
+            while let Ok(Some(line)) = lines.next_line().await {
+                if verbose {
                     pb_out.suspend(|| {
                         eprintln!(
                             "{} {} {} {line}",
@@ -123,6 +118,12 @@ impl Context {
                             style(&cmd_display_out).cyan()
                         )
                     });
+                } else {
+                    let mut buf = captured_clone.lock().await;
+                    if buf.len() >= 30 {
+                        buf.remove(0);
+                    }
+                    buf.push(line);
                 }
             }
         });
@@ -148,6 +149,23 @@ impl Context {
         })?;
 
         if !status.success() {
+            if !self.verbose {
+                let buf = captured.lock().await;
+                if !buf.is_empty() {
+                    let prefix = self.profile.name().to_uppercase();
+                    self.pb.suspend(|| {
+                        for line in buf.iter() {
+                            eprintln!(
+                                "{} {} {} {line}",
+                                style("[!]").red().bold(),
+                                style(&prefix).bold(),
+                                style(&cmd_display).cyan(),
+                            );
+                        }
+                    });
+                }
+            }
+
             return Err(crate::error::Error::IO(crate::io::Error::CommandFailed {
                 program,
                 args,
