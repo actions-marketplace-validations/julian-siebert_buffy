@@ -48,7 +48,9 @@ pub fn read_profiles() -> Result<Vec<NamedProfile>, Error> {
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("unknown")
-            .to_string();
+            .to_string()
+            .to_ascii_lowercase()
+            .replace("-", "_");
 
         let path_str = path.to_string_lossy().into_owned();
 
