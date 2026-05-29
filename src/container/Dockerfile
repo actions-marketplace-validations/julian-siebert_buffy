@@ -1,5 +1,4 @@
-FROM debian:bookworm-slim
-
+FROM debian:trixie-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 # base tools
@@ -11,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
     build-essential \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # protoc
@@ -42,11 +42,15 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
       protoc-gen-prost-crate \
       protoc-gen-tonic
 
-# java + maven + gpg already covered
+# maven + gpg
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-17-jdk-headless \
     maven \
+    openjdk-25-jdk-headless \
     && rm -rf /var/lib/apt/lists/*
+
+RUN echo "export JAVA_HOME=\$(readlink -f /usr/bin/java | sed 's|/bin/java||')" >> /etc/profile.d/java.sh
+ENV JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+
 
 # node + npm + ts-proto + typescript
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
@@ -61,9 +65,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && pip3 install --no-cache-dir --break-system-packages \
       grpcio-tools build twine
 
-# buffy itself
-ARG BUFFY_VERSION=latest
-RUN curl -sSL https://pkgs.julian-siebert.de/buffy/install.sh | sh \
- && mv ~/.local/bin/buffy /usr/local/bin/buffy
+ARG BUFFY_VERSION
+ARG TARGETARCH
+
+RUN arch="${TARGETARCH}" \
+  && if [ -z "$arch" ]; then \
+       case "$(uname -m)" in \
+         x86_64)  arch=amd64 ;; \
+         aarch64) arch=arm64 ;; \
+         *) echo "unsupported uname -m: $(uname -m)" && exit 1 ;; \
+       esac; \
+     fi \
+  && case "$arch" in \
+       amd64) target=x86_64-unknown-linux-gnu ;; \
+       arm64) target=aarch64-unknown-linux-gnu ;; \
+       *) echo "unsupported arch: $arch" && exit 1 ;; \
+     esac \
+  && curl -fsSL "https://pkgs.julian-siebert.de/buffy/${BUFFY_VERSION}/${target}/buffy" \
+     -o /usr/local/bin/buffy \
+  && chmod +x /usr/local/bin/buffy
+
 
 WORKDIR /work
+ENTRYPOINT ["/usr/local/bin/buffy"]

@@ -78,9 +78,9 @@ pub enum Error {
     #[diagnostic(code(buffy::build::failed), help("See the errors above for details."))]
     BuildFailed { count: usize },
 
-    #[error("Missing program: {program}")]
-    #[diagnostic(help("Is it installed in PATH?"))]
-    MissingProgram { program: String },
+    #[error("Required program `{program}` is not available")]
+    #[diagnostic(code(buffy::missing_program), help("{hint}"))]
+    MissingProgram { program: String, hint: String },
 
     #[error("Invalid SPDX expression: {expr}")]
     SpdxParse { expr: String },

@@ -18,6 +18,7 @@ use crate::{
 
 mod cli;
 pub mod configs;
+mod container;
 pub mod dependencies;
 #[allow(unused_assignments)]
 pub mod error;
@@ -29,6 +30,11 @@ pub mod targets;
 #[tokio::main]
 async fn main() -> miette::Result<()> {
     let cli = Cli::parse();
+
+    if cli.container && !container::is_in_container() {
+        let status = container::run_in_container().map_err(miette::Report::new)?;
+        std::process::exit(status.code().unwrap_or(1));
+    }
 
     dotenvy::dotenv().ok();
 

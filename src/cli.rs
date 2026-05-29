@@ -39,6 +39,9 @@ pub struct Cli {
     #[arg(long)]
     pub verbose: bool,
 
+    #[arg(short, long, default_value = "false")]
+    pub container: bool,
+
     #[command(subcommand)]
     pub command: Option<Commands>,
 }

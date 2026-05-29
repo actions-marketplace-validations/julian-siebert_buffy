@@ -325,6 +325,25 @@ pub enum DependencyError {
         )
     )]
     Build,
+
+    #[error("Java is installed but no JDK was found (only JRE)")]
+    #[diagnostic(
+        code(deps::java_not_jdk),
+        help(
+            "Buffy needs a full JDK for Maven builds, not just a JRE.\n\
+             \n\
+             Currently detected JAVA_HOME: {java_home}\n\
+             \n\
+             Install a JDK:\n\
+             • Debian:   apt install openjdk-21-jdk-headless\n\
+             • macOS:    brew install openjdk@21\n\
+             • Arch:     pacman -S jdk-openjdk\n\
+             • Anywhere: https://adoptium.net/\n\
+             \n\
+             Verify with: javac --version"
+        )
+    )]
+    JavaNotJdk { java_home: String },
 }
 
 pub fn gpg() -> Result<PathBuf, DependencyError> {
